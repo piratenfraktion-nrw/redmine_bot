@@ -48,7 +48,7 @@ class Issue < ActiveResource::Base
     end
 
     def end_datetime
-        dt = DateTime.parse("#{end_date} #{end_time}")
+        dt = DateTime.parse("#{end_date}T#{end_time}:00+02:00")
         dt
     end
 
@@ -93,6 +93,7 @@ if MODE == "umlauf"
         result = ERB.new(template).result(u.get_binding)
         page_name = 'Protokoll:Beschlüsse/' + u.start_date + '_' + u.subject
         mw.edit(page_name, result, :summary => 'RedmineBot')
+        puts "checking #{u.id} status: #{u.status.id} #{u.end_datetime < DateTime.now}"
         if DateTime.now > u.end_datetime
             puts "closing #{u.id}"
             Issue.put(u.id, :issue => { :status_id => 9 })
