@@ -7,7 +7,7 @@ require 'active_resource'
 require 'erb'
 
 if ARGV.length != 4
-    puts "usage: redmine_bot <mode (renew|umlauf)> <username> <password> <api_key>"
+    puts "usage: redmine_bot <mode (renew|umlauf|unhold)> <username> <password> <api_key>"
     exit(-1)
 end
 
@@ -15,8 +15,6 @@ MODE     = ARGV[0]
 USERNAME = ARGV[1]
 PASSWORD = ARGV[2]
 APIKEY   = ARGV[3]
-
-puts ARGV.inspect
 
 template = %q{{{Umlaufbeschluss
 |Startdatum=<%= start_date %>
@@ -55,7 +53,7 @@ class Issue < ActiveResource::Base
     end
 
     def get_field(name)
-        custom_fields.select{ |f| f.name == name }.first.value
+        custom_fields.select{ |f| f.name == name }.first.value rescue false
     end
 
     def pro; get_names("Dafür"); end
@@ -105,6 +103,18 @@ elsif MODE == "renew"
     morgen_wieder.each do |m|
         puts "renewing #{m.id}"
         Issue.put(m.id, :issue => { :status_id => 1 })
+    end
+elsif MODE == 'unhold'
+    hold = Issue.find(:all, :params => { :status_id => 14 })
+    hold.each do |h|
+        if h.get_field('Zurückstellen bis')
+            dt = DateTime.parse("#{h.get_field('Zurückstellen bis')}")
+            puts "checking #{h.id} #{dt}"
+            if DateTime.now >= dt
+                puts "unholding #{h.id}"
+                Issue.put(h.id, :issue => { :status_id => 2 })
+            end
+        end
     end
 else
     puts 'unknown command'
