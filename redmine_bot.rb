@@ -93,7 +93,6 @@ if MODE == "umlauf"
         result = ERB.new(template).result(u.get_binding)
         page_name = 'Protokoll:Beschlüsse/' + u.start_date + '_' + u.subject
         mw.edit(page_name, result, :summary => 'RedmineBot')
-        puts "checking #{u.id} status: #{u.status.id} #{u.end_datetime < DateTime.now}"
         if DateTime.now > u.end_datetime
             puts "closing #{u.id}"
             Issue.put(u.id, :issue => { :status_id => 9 })
@@ -110,7 +109,6 @@ elsif MODE == 'unhold'
     hold.each do |h|
         if h.get_field('Zurückstellen bis')
             dt = DateTime.parse("#{h.get_field('Zurückstellen bis')}")
-            puts "checking #{h.id} #{dt}"
             if DateTime.now >= dt
                 puts "unholding #{h.id}"
                 Issue.put(h.id, :issue => { :status_id => 2 })
