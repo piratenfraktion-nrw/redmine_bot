@@ -7,7 +7,7 @@ require 'active_resource'
 require 'erb'
 
 if ARGV.length != 4
-    puts "usage: redmine_bot <mode (renew|umlauf|unhold)> <username> <password> <api_key>"
+    puts "usage: redmine_bot <mode (renew|umlauf|unhold|inventarcheck|inventarmails)> <username> <password> <api_key>"
     exit(-1)
 end
 
@@ -114,6 +114,24 @@ elsif MODE == 'unhold'
                 Issue.put(h.id, :issue => { :status_id => 2 })
             end
         end
+    end
+elsif MODE == "inventarcheck"
+    inventar = Issue.find(:all, :params => { :status_id => 18  })
+    inventar.each do |i|
+      dt = DateTime.parse("#{i.get_field('Abgabedatum')}")
+      if DateTime.now > dt
+        puts "Inventaritem in Ticket \##{i.id} ist überfällig"
+        Issue.put(i.id, :issue => { :status_id => 21 })
+      elsif DateTime.now = dt
+        puts "Inventaritem in Ticket \##{i.id} ist heute fällig"
+        #TODO check if this really works, I'm just guessing here
+        Issue.put(i.id, :issue => { :status_id => 22, :comment => "Das Fälligkeitsdatum für das ausgeliehene Objekt ist erreicht. Bitte gib es heute bei der IT ab." })
+      end
+    end
+elsif MODE == "inventarmails"
+    inventar_üerfällig = Issue.find(:all, :params => { :status_id => 21 })
+    inventar_überfällig.each do |i|
+      #TODO send some semi-angry mail
     end
 else
     puts 'unknown command'
