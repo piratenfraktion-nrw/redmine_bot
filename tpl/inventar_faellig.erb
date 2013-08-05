@@ -1,15 +1,15 @@
 From: Fraktions-IT-Autoreminder <it+redmine@piratenfraktion-nrw.de>
-To: <%= i.assigned_to.name%> %> <<%= User.find(:first, :params => { :id => i.assigned_to.id %>).mail %>>
-Subject: [Inventar - Inventar #<%= i.id %>] (Fällig) <%= i.subject %>
-Date: <%= DateTime.now %>
+To: <%= assigned_to.name%> %> <<%= User.find(assigned_to.id).mail %>>
+Subject: [Inventar - Inventar #<%= id %>] (Fällig) <%= subject %>
+Date: <%= DateTime.now.strftime('%a, %d %b %Y %H:%M:%S') %>
 
 Hallo,
-bitte gib das von dir ausliehene Objekt "<%= i.subject %>" (<%= i.get_field('Typ') %> von <%= i.get_field('Hersteller') %>) heute bei der Fraktions-IT zurück. Du hast dieses am <%= i.start_date %> erhalten, dabei wurde der heutige Tag als Rückgabedatum festgelegt.
+bitte gib das von dir ausliehene Objekt "<%= subject %>" (<%= get_field('Typ') %> von <%= get_field('Hersteller') %>) heute bei der Fraktions-IT zurück. Du hast dieses am <%= start_date %> erhalten, dabei wurde der heutige Tag als Rückgabedatum festgelegt.
 
 Falls du das Objekt heute nicht zurückgeben kannst oder länger behalten willst, wende dich bitte an die Fraktions-IT.
 
 Nähere Informationen findest du hier:
-> https://redmine.piratenfraktion-nrw.de/issues/<%= i.id %>
+> https://redmine.piratenfraktion-nrw.de/issues/<%= id %>
 
 -- 
 Diese Mail wurde automatisiiert vom Inventarbot der Fraktions-IT verschickt.

@@ -53,17 +53,19 @@ elsif MODE == 'unhold'
   end
 elsif MODE == "inventarcheck"
   inventar = Issue.find(:all, :params => { :status_id => 18  })
-  Net::SMTP.start('mail.piratenfraktion-nrw.de', 587, 'piratenfraktion-nrw.de', "#{USERNAME}", "#{PASSWORD}") do |smtp|
-    inventar.each do |i|
-      dt = DateTime.parse("#{i.due_date}")
-      if DateTime.now >= dt
-        #puts "Inventaritem in Ticket \##{i.id} ist heute fällig"
-        Issue.put(i.id, :issue => { :status_id => 22 })
-        msg = ERB.new(File.read('./tpl/inventar_faellig.erb')).result(i.get_binding)
-        smtp.send_message msg, 'it+redmine@piratenfraktion-nrw.de', User.find(:first, :params => { :id => i.assigned_to.id }).mail
-      end
+  smtp = Net::SMTP.new('mail.piratenfraktion-nrw.de', 587)
+  smtp.enable_starttls
+  smtp.start('piratenfraktion-nrw.de', USERNAME, PASSWORD, :login)
+  inventar.each do |i|
+    dt = DateTime.parse("#{i.due_date}")
+    if DateTime.now >= dt
+      #puts "Inventaritem in Ticket \##{i.id} ist heute fällig"
+      Issue.put(i.id, :issue => { :status_id => 22 })
+      msg = ERB.new(File.read('./tpl/inventar_faellig.erb')).result(i.get_binding)
+      smtp.send_message msg, 'it+redmine@piratenfraktion-nrw.de', User.find(i.assigned_to.id).mail
     end
   end
+  smtp.finish
   inventar = Issue.find(:all, :params => { :status_id => 22 })
   inventar.each do |i|
     dt = DateTime.parse("#{i.due_date}")
@@ -74,12 +76,14 @@ elsif MODE == "inventarcheck"
   end
 elsif MODE == "inventarmails"
   inventar = Issue.find(:all, :params => { :status_id => 21 })
-  Net::SMTP.start('mail.piratenfraktion-nrw.de', 587, 'piratenfraktion-nrw.de', "#{USERNAME}", "#{PASSWORD}") do |smtp|
-    inventar.each do |i|
-      msg = ERB.new(File.read('./tpl/inventar_ueberfaellig.erb')).result(i.get_binding)
-      smtp.send_message msg, 'it+redmine@piratenfraktion-nrw.de', User.find(:first, :params => { :id => i.assigned_to.id }).mail
-    end
+  smtp = Net::SMTP.new('mail.piratenfraktion-nrw.de', 587)
+  smtp.enable_starttls
+  smtp.start('piratenfraktion-nrw.de', USERNAME, PASSWORD, :login)
+  inventar.each do |i|
+    msg = ERB.new(File.read('./tpl/inventar_ueberfaellig.erb')).result(i.get_binding)
+    smtp.send_message msg, 'it+redmine@piratenfraktion-nrw.de', User.find(i.assigned_to.id).mail
   end
+  smtp.finish
 else
   puts 'unknown command'
 end

@@ -1,15 +1,15 @@
 From: Fraktions-IT-Autoreminder <it+redmine@piratenfraktion-nrw.de>
-To: <%= i.assigned_to.name %> <<%= User.find(:first, :params => { :id => i.assigned_to.id  %>).mail %>>
-Subject: [Inventar - Inventar #<%= i.id %>] (Überfällig) <%= i.subject %>
-Date: <%= DateTime.now %>
+To: <%= assigned_to.name %> <<%= User.find(assigned_to.id).mail %>>
+Subject: [Inventar - Inventar #<%= id %>] (Überfällig) <%= subject %>
+Date: <%= DateTime.now.strftime('%a, %d %b %Y %H:%M:%S') %>
 
 Hallo,
-das von dir ausliehene Objekt "<%= i.subject %>" (<%= i.get_field('Typ') %> von <%= i.get_field('Hersteller') %>) hat den Ausleihezeitraum überschritten. Du hast dieses am <%= i.start_date %> erhalten, dabei wurde der <%= i.due_date %> als Rückgabedatum festgelegt.
+das von dir ausliehene Objekt "<%= subject %>" (<%= get_field('Typ') %> von <%= get_field('Hersteller') %>) hat den Ausleihezeitraum überschritten. Du hast dieses am <%= start_date %> erhalten, dabei wurde der <%= due_date %> als Rückgabedatum festgelegt.
 
 Bitte gib das Objekt so schnell wie möglich zurück oder wende dich an die Fraktions-IT. Bis dahin werden regelmäßig weitere Erinnerungsmails an dich gesendet werden.
 
 Nähere Informationen findest du hier:
-> https://redmine.piratenfraktion-nrw.de/issues/<%= i.id %>
+> https://redmine.piratenfraktion-nrw.de/issues/<%= id %>
 
 -- 
 Diese Mail wurde automatisiiert vom Inventarbot der Fraktions-IT verschickt.
