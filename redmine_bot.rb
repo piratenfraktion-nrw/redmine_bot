@@ -7,9 +7,6 @@ require 'active_resource'
 require 'erb'
 require 'net/smtp'
 
-require 'models/user.rb'
-require 'models/issue.rb'
-
 if ARGV.length != 4
   puts "usage: redmine_bot <mode (renew|umlauf|unhold|inventarcheck|inventarmails)> <username> <password> <api_key>"
   exit(-1)
@@ -20,13 +17,16 @@ USERNAME = ARGV[1]
 PASSWORD = ARGV[2]
 APIKEY   = ARGV[3]
 
+require './models/user.rb'
+require './models/issue.rb'
+
 if MODE == "umlauf"
   mw = MediaWiki::Gateway.new('https://wiki.piratenfraktion-nrw.de/api.php')
   mw.login(USERNAME, PASSWORD, 'Piratenfraktion NRW')
 
   umlaufbeschluesse = Issue.find(:all, :params => { :tracker_id => 13 })
   umlaufbeschluesse.each do |u|
-    result = ERB.new(File.read('tpl/umlaufbeschluss.erb')).result(u.get_binding)
+    result = ERB.new(File.read('./tpl/umlaufbeschluss.erb')).result(u.get_binding)
     page_name = 'Protokoll:Beschlüsse/' + u.start_date + '_' + u.subject
     mw.edit(page_name, result, :summary => 'RedmineBot')
     if DateTime.now > u.end_datetime
@@ -59,7 +59,7 @@ elsif MODE == "inventarcheck"
       if DateTime.now >= dt
         #puts "Inventaritem in Ticket \##{i.id} ist heute fällig"
         Issue.put(i.id, :issue => { :status_id => 22 })
-        msg = ERB.new(File.read('tpl/inventar_faellig.erb')).result(i.get_binding)
+        msg = ERB.new(File.read('./tpl/inventar_faellig.erb')).result(i.get_binding)
         smtp.send_message msg, 'it+redmine@piratenfraktion-nrw.de', User.find(:first, :params => { :id => i.assigned_to.id }).mail
       end
     end
@@ -76,7 +76,7 @@ elsif MODE == "inventarmails"
   inventar = Issue.find(:all, :params => { :status_id => 21 })
   Net::SMTP.start('mail.piratenfraktion-nrw.de', 587, 'piratenfraktion-nrw.de', "#{USERNAME}", "#{PASSWORD}") do |smtp|
     inventar.each do |i|
-      msg = ERB.new(File.read('tpl/inventar_ueberfaellig.erb')).result(i.get_binding)
+      msg = ERB.new(File.read('./tpl/inventar_ueberfaellig.erb')).result(i.get_binding)
       smtp.send_message msg, 'it+redmine@piratenfraktion-nrw.de', User.find(:first, :params => { :id => i.assigned_to.id }).mail
     end
   end
