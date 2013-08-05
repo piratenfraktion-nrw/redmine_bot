@@ -1,3 +1,4 @@
+# encoding: UTF-8
 class Issue < ActiveResource::Base
   headers['X-Redmine-API-Key'] = APIKEY
   self.site = 'https://redmine.piratenfraktion-nrw.de/'
