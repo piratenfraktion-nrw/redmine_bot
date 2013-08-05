@@ -62,6 +62,7 @@ elsif MODE == "inventarcheck"
       #puts "Inventaritem in Ticket \##{i.id} ist heute fällig"
       Issue.put(i.id, :issue => { :status_id => 22 })
       msg = ERB.new(File.read('./tpl/inventar_faellig.erb')).result(i.get_binding)
+      msg.force_encoding('ASCII-8BIT')
       smtp.send_message msg, 'it+redmine@piratenfraktion-nrw.de', User.find(i.assigned_to.id).mail
     end
   end
@@ -81,6 +82,7 @@ elsif MODE == "inventarmails"
   smtp.start('piratenfraktion-nrw.de', USERNAME, PASSWORD, :login)
   inventar.each do |i|
     msg = ERB.new(File.read('./tpl/inventar_ueberfaellig.erb')).result(i.get_binding)
+    msg.force_encoding('ASCII-8BIT')
     smtp.send_message msg, 'it+redmine@piratenfraktion-nrw.de', User.find(i.assigned_to.id).mail
   end
   smtp.finish
