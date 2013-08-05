@@ -4,12 +4,12 @@ Subject: [Inventar - Inventar #<%= id %>] (Überfällig) <%= subject %>
 Date: <%= DateTime.now.strftime('%a, %d %b %Y %H:%M:%S') %>
 
 Hallo,
-das von dir ausliehene Objekt "<%= subject %>" (<%= get_field('Typ') %> von <%= get_field('Hersteller') %>) hat den Ausleihezeitraum überschritten. Du hast dieses am <%= start_date %> erhalten, dabei wurde der <%= due_date %> als Rückgabedatum festgelegt.
+das von dir ausgeliehene Objekt "<%= subject %>" (<%= get_field('Typ') %> von <%= get_field('Hersteller') %>) hat den Ausleihezeitraum überschritten. Du hast dieses am <%= start_date %> erhalten, dabei wurde der <%= due_date %> als Rückgabedatum festgelegt.
 
-Bitte gib das Objekt so schnell wie möglich zurück oder wende dich an die Fraktions-IT. Bis dahin werden regelmäßig weitere Erinnerungsmails an dich gesendet werden.
+Bitte gib das Objekt so schnell wie möglich zurück oder wende dich an die Fraktions-IT. Bis dahin werden weitere Erinnerungsmails an dich gesendet.
 
 Nähere Informationen findest du hier:
 > https://redmine.piratenfraktion-nrw.de/issues/<%= id %>
 
 -- 
-Diese Mail wurde automatisiiert vom Inventarbot der Fraktions-IT verschickt.
+Diese Mail wurde automatisiert vom Inventarbot der Fraktions-IT verschickt.

@@ -4,7 +4,7 @@ Subject: [Inventar - Inventar #<%= id %>] (Fällig) <%= subject %>
 Date: <%= DateTime.now.strftime('%a, %d %b %Y %H:%M:%S') %>
 
 Hallo,
-bitte gib das von dir ausliehene Objekt "<%= subject %>" (<%= get_field('Typ') %> von <%= get_field('Hersteller') %>) heute bei der Fraktions-IT zurück. Du hast dieses am <%= start_date %> erhalten, dabei wurde der heutige Tag als Rückgabedatum festgelegt.
+bitte gib das von dir ausgeliehene Objekt "<%= subject %>" (<%= get_field('Typ') %> von <%= get_field('Hersteller') %>) heute bei der Fraktions-IT zurück. Du hast dieses am <%= start_date %> erhalten, dabei wurde der heutige Tag als Rückgabedatum festgelegt.
 
 Falls du das Objekt heute nicht zurückgeben kannst oder länger behalten willst, wende dich bitte an die Fraktions-IT.
 
@@ -12,4 +12,4 @@ Nähere Informationen findest du hier:
 > https://redmine.piratenfraktion-nrw.de/issues/<%= id %>
 
 -- 
-Diese Mail wurde automatisiiert vom Inventarbot der Fraktions-IT verschickt.
+Diese Mail wurde automatisiert vom Inventarbot der Fraktions-IT verschickt.
