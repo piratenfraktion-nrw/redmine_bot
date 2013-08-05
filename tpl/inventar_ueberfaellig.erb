@@ -1,6 +1,6 @@
 From: Fraktions-IT-Autoreminder <it+redmine@piratenfraktion-nrw.de>
 To: <%= i.assigned_to.name %> <<%= User.find(:first, :params => { :id => i.assigned_to.id  %>).mail %>>
-Subject: [Inventar - Inventar \#<%= i.id %>] (Überfällig) <%= i.subject %>
+Subject: [Inventar - Inventar #<%= i.id %>] (Überfällig) <%= i.subject %>
 Date: <%= DateTime.now %>
 
 Hallo,
