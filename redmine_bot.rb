@@ -29,7 +29,7 @@ if MODE == "umlauf"
     result = ERB.new(File.read('./tpl/umlaufbeschluss.erb')).result(u.get_binding)
     page_name = 'Protokoll:Beschlüsse/' + u.start_date + '_' + u.subject
     unless mw.get(page_name)
-      Issue.put(u.id, :issue => { :notes => "Zusammenfassung um Wiki: https://wiki.piratenfraktion-nrw.de/wiki/#{page_name}"})
+      Issue.put(u.id, :issue => { :notes => "Zusammenfassung im Wiki: https://wiki.piratenfraktion-nrw.de/wiki/#{page_name}"})
     end
     mw.edit(page_name, result, :summary => 'RedmineBot')
     if DateTime.now > u.end_datetime
