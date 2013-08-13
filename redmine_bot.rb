@@ -27,7 +27,7 @@ if MODE == "umlauf"
   umlaufbeschluesse = Issue.find(:all, :params => { :tracker_id => 13 })
   umlaufbeschluesse.each do |u|
     result = ERB.new(File.read('./tpl/umlaufbeschluss.erb')).result(u.get_binding)
-    page_name = MediaWiki.wiki_to_uri('Protokoll:Beschlüsse/' + u.start_date + '_' + u.subject)
+    page_name = ('Protokoll:Beschlüsse/' + u.start_date + '_' + u.subject).gsub(' ', '_')
     unless mw.get(page_name)
       Issue.put(u.id, :issue => { :notes => "Zusammenfassung im Wiki: https://wiki.piratenfraktion-nrw.de/wiki/#{page_name}"})
     end
