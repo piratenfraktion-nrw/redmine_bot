@@ -21,7 +21,7 @@ require './models/user.rb'
 require './models/issue.rb'
 
 if MODE == "umlauf"
-  mw = MediaWiki::Gateway.new('https://wiki.piratenfraktion-nrw.de/api.php')
+  mw = MediaWiki::Gateway.new('https://wiki.piratenfraktion-nrw.de/w/api.php')
   mw.login(USERNAME, PASSWORD, 'Piratenfraktion NRW')
 
   umlaufbeschluesse = Issue.find(:all, :params => { :tracker_id => 13 })
