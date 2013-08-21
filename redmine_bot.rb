@@ -31,6 +31,11 @@ if MODE == "umlauf"
       page_name = ('Protokoll:Beschlüsse/' + u.start_date + '_' + u.subject).gsub(' ', '_')
       unless mw.get(page_name)
         Issue.put(u.id, :issue => { :notes => "Zusammenfassung im Wiki: https://wiki.piratenfraktion-nrw.de/wiki/#{page_name}"})
+        u_with_attachments = Issue.get(u.id, :include => :attachments)
+        u_with_attachments['attachments'].each do |a|
+          mw.upload(nil, 'filename' => a['filename'], 'url' => a['content_url'])
+          result = result + "\n* [[Datei:#{a['filename']}|#{a['filename']}]]"
+        end
       end
       mw.edit(page_name, result, :summary => 'RedmineBot')
       if DateTime.now > u.end_datetime
