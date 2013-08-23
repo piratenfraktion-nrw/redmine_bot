@@ -36,6 +36,9 @@ if MODE == "umlauf"
           mw.upload(nil, 'filename' => a['filename'], 'url' => a['content_url'])
           result = result + "\n* [[Datei:#{a['filename']}|#{a['filename']}]]"
         end
+        if u_with_attachments['attachments'].empty?
+          result = result + "\n* keine"
+        end
       end
       mw.edit(page_name, result, :summary => 'RedmineBot')
       if DateTime.now > u.end_datetime
