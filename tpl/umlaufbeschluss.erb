@@ -19,3 +19,11 @@
 Link zum original Umlaufbeschluss im Redmine: [https://redmine.piratenfraktion-nrw.de/issues/<%= id %>]
 
 === Anhänge ===
+
+<% unless attachments.blank? %>
+  <% attachments.each do |a| %>
+* [[Datei:<%= a['filename'] %>|<%= a['filename'] %>]]
+  <% end %>
+<% else %>
+Keine Anhänge vorhanden.
+<% end %>

@@ -3,6 +3,7 @@ class Issue < ActiveResource::Base
   headers['X-Redmine-API-Key'] = APIKEY
   self.site = 'https://redmine.piratenfraktion-nrw.de/'
   self.format = :xml
+  attr_accessor :attachments
 
   def end_date
     get_field 'End Datum'

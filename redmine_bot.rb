@@ -7,8 +7,8 @@ require 'active_resource'
 require 'erb'
 require 'net/smtp'
 
-if ARGV.length != 4
-  puts "usage: redmine_bot <mode (renew|umlauf|unhold|inventarcheck|inventarmails)> <username> <password> <api_key>"
+if ARGV.length < 4
+  puts "usage: redmine_bot <mode (renew|umlauf|unhold|inventarcheck|inventarmails)> <username> <password> <api_key> [<issue_id>]"
   exit(-1)
 end
 
@@ -16,6 +16,7 @@ MODE     = ARGV[0]
 USERNAME = ARGV[1]
 PASSWORD = ARGV[2]
 APIKEY   = ARGV[3]
+ISSUE    = ARGV[4]
 
 require './models/user.rb'
 require './models/issue.rb'
@@ -24,27 +25,24 @@ if MODE == "umlauf"
   mw = MediaWiki::Gateway.new('https://wiki.piratenfraktion-nrw.de/w/api.php')
   mw.login(USERNAME, PASSWORD, 'Piratenfraktion NRW')
 
-  umlaufbeschluesse = Issue.find(:all, :params => { :tracker_id => 13 })
+  umlaufbeschluesse = []
+  umlaufbeschluesse << Issue.find(ISSUE) unless ISSUE.nil?
+  umlaufbeschluesse = Issue.find(:all, :params => { :tracker_id => 13, :limit => 99999, :status_id => "8" }) if ISSUE.nil?
+
   umlaufbeschluesse.each do |u|
-    if u.status.id != 1
-      result = ERB.new(File.read('./tpl/umlaufbeschluss.erb')).result(u.get_binding)
-      page_name = ('Protokoll:Beschlüsse/' + u.start_date + '_' + u.subject).gsub(' ', '_')
-      unless mw.get(page_name)
-        Issue.put(u.id, :issue => { :notes => "Zusammenfassung im Wiki: https://wiki.piratenfraktion-nrw.de/wiki/#{page_name}"})
-        u_with_attachments = Issue.get(u.id, :include => :attachments)
-        u_with_attachments['attachments'].each do |a|
-          mw.upload(nil, 'filename' => a['filename'], 'url' => a['content_url'])
-          result = result + "\n* [[Datei:#{a['filename']}|#{a['filename']}]]"
-        end
-        if u_with_attachments['attachments'].empty?
-          result = result + "\n* keine"
-        end
+    u.attachments = Issue.get(u.id, :include => :attachments)['attachments']
+    result = ERB.new(File.read('./tpl/umlaufbeschluss.erb')).result(u.get_binding)
+    page_name = ('Protokoll:Beschlüsse/' + u.start_date + '_' + u.subject).gsub(' ', '_')
+    unless mw.get(page_name)
+      Issue.put(u.id, :issue => { :notes => "Zusammenfassung im Wiki: https://wiki.piratenfraktion-nrw.de/wiki/#{MediaWiki::wiki_to_uri(page_name)}"})
+      u['attachments'].each do |a|
+        mw.upload(nil, 'filename' => a['filename'], 'url' => a['content_url'])
       end
-      mw.edit(page_name, result, :summary => 'RedmineBot')
-      if DateTime.now > u.end_datetime
-        puts "closing #{u.id}"
-        Issue.put(u.id, :issue => { :status_id => 9 })
-      end
+    end
+    mw.edit(page_name, result, :summary => 'RedmineBot')
+    if DateTime.now > u.end_datetime
+      puts "closing #{u.id}"
+      Issue.put(u.id, :issue => { :status_id => 9 })
     end
   end
 elsif MODE == "renew"
