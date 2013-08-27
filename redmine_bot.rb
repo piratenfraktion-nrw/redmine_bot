@@ -35,7 +35,7 @@ if MODE == "umlauf"
     page_name = ('Protokoll:Beschlüsse/' + u.start_date + '_' + u.subject).gsub(' ', '_')
     unless mw.get(page_name)
       Issue.put(u.id, :issue => { :notes => "Zusammenfassung im Wiki: https://wiki.piratenfraktion-nrw.de/wiki/#{MediaWiki::wiki_to_uri(page_name)}"})
-      u['attachments'].each do |a|
+      u.attachments.each do |a|
         mw.upload(nil, 'filename' => a['filename'], 'url' => a['content_url'])
       end
     end
