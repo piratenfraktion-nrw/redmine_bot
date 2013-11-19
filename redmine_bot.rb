@@ -41,7 +41,7 @@ if MODE == "umlauf"
     end
     mw.edit(page_name, result, :summary => 'RedmineBot')
     if DateTime.now > u.end_datetime
-      puts "closing #{u.id}"
+      puts "closing \##{u.id}"
       Issue.put(u.id, :issue => { :status_id => 9 })
     end
   end
@@ -57,7 +57,7 @@ elsif MODE == 'unhold'
     if h.get_field('Zurückstellen bis')
       dt = DateTime.parse("#{h.get_field('Zurückstellen bis')}")
       if DateTime.now >= dt
-        puts "unholding #{h.id}"
+        puts "unholding \##{h.id}"
         Issue.put(h.id, :issue => { :status_id => 2 })
       end
     end
