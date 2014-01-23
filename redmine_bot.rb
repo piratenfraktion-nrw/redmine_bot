@@ -140,13 +140,12 @@ elsif MODE == "drucksachen_opal"
           ]
         )
         if issue.save
-          puts issue.id
+          puts '#'+issue.id
         else
           puts issue.errors.full_messages
         end
       end
     end
-    puts "found #{uids.count}."
     imap.copy(uid, 'Trash')
     imap.store(uid, "+FLAGS", [:Deleted])
   end
