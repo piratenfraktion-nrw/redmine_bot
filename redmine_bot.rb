@@ -6,6 +6,10 @@ require 'media_wiki'
 require 'active_resource'
 require 'erb'
 require 'net/smtp'
+require 'net/imap'
+require 'mail'
+require 'rest_client'
+
 
 if ARGV.length < 4
   puts "usage: redmine_bot <mode (renew|umlauf|unhold|inventarcheck|inventarmails)> <username> <password> <api_key> [<issue_id>]"
@@ -17,12 +21,18 @@ USERNAME = ARGV[1]
 PASSWORD = ARGV[2]
 APIKEY   = ARGV[3]
 ISSUE    = ARGV[4]
+DRUCKSACHEN_MAIL_USER = ARGV[5]
+DRUCKSACHEN_MAIL_PASSWORD = ARGV[6]
 
+WIKI_URL = 'https://wiki.piratenfraktion-nrw.de'
+REDMINE_URL = 'https://redmine.piratenfraktion-nrw.de'
+
+require './drucksachen_extractor.rb'
 require './models/user.rb'
 require './models/issue.rb'
 
 if MODE == "umlauf"
-  mw = MediaWiki::Gateway.new('https://wiki.piratenfraktion-nrw.de/w/api.php')
+  mw = MediaWiki::Gateway.new("#{WIKI_URL}/w/api.php")
   mw.login(USERNAME, PASSWORD, 'Piratenfraktion NRW')
 
   umlaufbeschluesse = []
@@ -34,7 +44,7 @@ if MODE == "umlauf"
     result = ERB.new(File.read('./tpl/umlaufbeschluss.erb')).result(u.get_binding)
     page_name = ('Protokoll:Beschlüsse/' + u.start_date + '_' + u.subject).gsub(' ', '_')
     unless mw.get(page_name)
-      Issue.put(u.id, :issue => { :notes => "Zusammenfassung im Wiki: https://wiki.piratenfraktion-nrw.de/wiki/#{MediaWiki::wiki_to_uri(page_name)}"})
+      Issue.put(u.id, :issue => { :notes => "Zusammenfassung im Wiki: #{WIKI_URL}/wiki/#{MediaWiki::wiki_to_uri(page_name)}"})
       u.attachments.each do |a|
         mw.upload(nil, 'filename' => a['filename'], 'url' => a['content_url'])
       end
@@ -97,6 +107,52 @@ elsif MODE == "inventarmails"
     smtp.send_message msg, 'it+redmine@piratenfraktion-nrw.de', User.find(i.assigned_to.id).mail
   end
   smtp.finish
+elsif MODE == "drucksachen_opal"
+  imap = Net::IMAP.new("mail.piratenfraktion-nrw.de", 993, true)
+  imap.login(DRUCKSACHEN_MAIL_USER, DRUCKSACHEN_MAIL_PASSWORD)
+  imap.select('INBOX/drucksachen_opal')
+  uids = []
+  imap.search(['SUBJECT', 'Parlamentspapiere']).each do |uid|
+    uids << uid
+    body = imap.fetch(uid,'RFC822')[0].attr['RFC822']
+    mail = Mail.read_from_string(body)
+    mail.attachments.each do |a|
+      drucksachen = parseDrucksachen(a.body.decoded)
+      drucksachen.each do |ds|
+        ds_dl = RestClient.get(ds[:link])
+        response = RestClient.post("#{REDMINE_URL}/uploads.json?key=#{APIKEY}", ds_dl, {
+          :multipart => true,
+          :content_type => 'application/octet-stream'
+        })
+        token = JSON.parse(response)['upload']['token']
+        issue = Issue.new(
+          :subject => "#{ds[:number]}: #{ds[:title]}",
+          :project_id => 'Dokumente',
+          :description => ds[:link],
+          :tracker_id => 11,
+          :uploads => [
+            {
+              :token => token,
+              :filename => ds[:link].split('/').last,
+              :description => ds[:number],
+              :content => 'application/pdf'
+            }
+          ]
+        )
+        if issue.save
+          puts issue.id
+        else
+          puts issue.errors.full_messages
+        end
+      end
+    end
+    puts "found #{uids.count}."
+    imap.copy(uid, 'Trash')
+    imap.store(uid, "+FLAGS", [:Deleted])
+  end
+  imap.expunge
+  imap.logout
+  imap.disconnect
 else
   puts 'unknown command'
 end

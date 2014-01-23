@@ -1,7 +1,7 @@
 # encoding: UTF-8
 class Issue < ActiveResource::Base
   headers['X-Redmine-API-Key'] = APIKEY
-  self.site = 'https://redmine.piratenfraktion-nrw.de/'
+  self.site = REDMINE_URL
   self.format = :xml
   attr_accessor :attachments
 
