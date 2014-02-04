@@ -50,7 +50,7 @@ if MODE == "umlauf"
       end
     end
     mw.edit(page_name, result, :summary => 'RedmineBot')
-    if Time.now.utc > u.end_datetime.to_time.utc
+    if Time.now > u.end_datetime.to_time
       puts "closing \##{u.id}"
       Issue.put(u.id, :issue => { :status_id => 9 })
     end

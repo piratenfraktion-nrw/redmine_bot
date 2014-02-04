@@ -14,7 +14,7 @@ class Issue < ActiveResource::Base
   end
 
   def end_datetime
-    dt = DateTime.parse("#{end_date}T#{end_time}:00+03:00")
+    dt = DateTime.parse("#{end_date}T#{end_time}:00+01:00")
     dt
   end
 
