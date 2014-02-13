@@ -120,17 +120,16 @@ elsif MODE == "drucksachen_opal"
       drucksachen = parseDrucksachen(a.body.decoded)
       drucksachen.each do |ds|
         ds_dl = RestClient.get(ds[:link])
-        response = RestClient.post("#{REDMINE_URL}/uploads.json?key=#{APIKEY}", ds_dl, {
-          :multipart => true,
-          :content_type => 'application/octet-stream'
-        })
-        token = JSON.parse(response)['upload']['token']
-        issue = Issue.new(
-          :subject => "#{ds[:number]}: #{ds[:title]}",
-          :project_id => 'Dokumente',
-          :description => ds[:link],
-          :tracker_id => 11,
-          :uploads => [
+
+        upload = []
+
+        if ds_dl.code == 200
+          response = RestClient.post("#{REDMINE_URL}/uploads.json?key=#{APIKEY}", ds_dl, {
+            :multipart => true,
+              :content_type => 'application/octet-stream'
+          })
+          token = JSON.parse(response)['upload']['token']
+          upload = [
             {
               :token => token,
               :filename => ds[:link].split('/').last,
@@ -138,6 +137,14 @@ elsif MODE == "drucksachen_opal"
               :content => 'application/pdf'
             }
           ]
+        end
+
+        issue = Issue.new(
+          :subject => "#{ds[:number]}: #{ds[:title]}",
+          :project_id => 'Dokumente',
+          :description => ds[:link],
+          :tracker_id => 11,
+          :uploads => upload
         )
         if issue.save
           puts '#'+issue.id
